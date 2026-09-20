@@ -1,7 +1,7 @@
 {
   "config": {
-    "instagramLink": "",
     "instagramUsername": "INSTAGRAM_USERNAME",
+    "instagramLink": "INSTAGRAM_USERNAME",
     "email": "hello@pixelora.in",
     "showreel": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     "social": {
@@ -20,7 +20,7 @@
   "text": {
     "pill": "Available for freelance edits",
     "h1": "Videos<br>people watch<br>till the end.",
-    "author": "Aditya Gautam",
+    "author": "Aditya Gautam | Senior Editor",
     "role": "Video editor and colorist",
     "abtitle": "Hi, I'm<br>Aditya.",
     "abp1": "I'm a video editor with 3 years of experience. I turn raw footage into YouTube videos, reels and ads that people actually finish.",
@@ -32,23 +32,157 @@
     "tagline": "Video editing and color grading by Aditya Gautam."
   },
   "services": [
-    { "title": "Video editing", "desc": "Cuts, pacing, captions and story flow for YouTube, reels and ads.", "tools": "DaVinci Resolve" },
-    { "title": "Color grading", "desc": "Fix exposure and skin tones, then give your footage a cinematic look.", "tools": "DaVinci Resolve" },
-    { "title": "Graphic design", "desc": "Logos, banners, channel art and social posts that match your brand.", "tools": "Illustrator, Photoshop" },
-    { "title": "Motion graphics", "desc": "Animated titles, lower thirds, logo stings and smooth transitions.", "tools": "After Effects" },
-    { "title": "Sound designing", "desc": "Clean voice, balanced music and effects that make every cut hit harder.", "tools": "DaVinci Resolve" },
-    { "title": "Thumbnail editing", "desc": "Bold, clear thumbnails designed to earn the click.", "tools": "Photoshop" }
+    {
+      "title": "Video editing",
+      "desc": "Cuts, pacing, captions and story flow for YouTube, reels and ads.",
+      "tools": "DaVinci Resolve"
+    },
+    {
+      "title": "Color grading",
+      "desc": "Fix exposure and skin tones, then give your footage a cinematic look.",
+      "tools": "DaVinci Resolve"
+    },
+    {
+      "title": "Graphic design",
+      "desc": "Logos, banners, channel art and social posts that match your brand.",
+      "tools": "Illustrator, Photoshop"
+    },
+    {
+      "title": "Motion graphics",
+      "desc": "Animated titles, lower thirds, logo stings and smooth transitions.",
+      "tools": "After Effects"
+    },
+    {
+      "title": "Sound designing",
+      "desc": "Clean voice, balanced music and effects that make every cut hit harder.",
+      "tools": "DaVinci Resolve"
+    },
+    {
+      "title": "Thumbnail editing",
+      "desc": "Bold, clear thumbnails designed to earn the click.",
+      "tools": "Photoshop"
+    }
   ],
   "projects": [
-    { "id": 1, "cat": "youtube", "ratio": "16:9", "title": "Long-form YouTube edit", "sub": "Add your project name here", "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", "preview": "", "poster": "", "dur": "12:40", "badge": "YouTube" },
-    { "id": 2, "cat": "reels", "ratio": "9:16", "title": "Fast-cut reel", "sub": "Captions, beats and sound", "video": "https://assets.mixkit.co/videos/preview/mixkit-vertical-video-of-a-woman-posing-with-sunglasses-42459-large.mp4", "preview": "", "poster": "", "dur": "0:28", "badge": "Reel" },
-    { "id": 3, "cat": "ads", "ratio": "9:16", "title": "Product ad", "sub": "Motion graphics and grade", "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4", "preview": "", "poster": "", "dur": "0:30", "badge": "Ad" },
-    { "id": 4, "cat": "thumbnails", "ratio": "1:1", "title": "Thumbnail design", "sub": "Built to earn the click", "video": "", "preview": "", "poster": "", "dur": "", "badge": "Thumbnail" },
-    { "id": 5, "cat": "motion", "ratio": "1:1", "title": "Animated titles", "sub": "After Effects", "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "preview": "", "poster": "", "dur": "0:12", "badge": "Motion" },
-    { "id": 6, "cat": "youtube", "ratio": "16:9", "title": "Vlog edit", "sub": "Story-first cutting and grade", "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", "preview": "", "poster": "", "dur": "8:15", "badge": "YouTube" },
-    { "id": 7, "cat": "reels", "ratio": "9:16", "title": "Trend reel", "sub": "Rhythm and text on beat", "video": "https://assets.mixkit.co/videos/preview/mixkit-vertical-video-of-a-woman-posing-with-sunglasses-42459-large.mp4", "preview": "", "poster": "", "dur": "0:21", "badge": "Reel" },
-    { "id": 8, "cat": "sound", "ratio": "16:9", "title": "Sound design", "sub": "Clean voice and punchy effects", "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4", "preview": "", "poster": "", "dur": "", "badge": "Sound" },
-    { "id": 9, "cat": "grading reels", "ratio": "9:16", "title": "Grade test", "sub": "Look development", "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", "preview": "", "poster": "", "dur": "0:15", "badge": "Grade" },
-    { "id": 10, "cat": "motion", "ratio": "16:9", "title": "Logo animation", "sub": "A short brand sting", "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", "preview": "", "poster": "", "dur": "0:06", "badge": "Motion" }
+    {
+      "id": 1,
+      "cat": "youtube",
+      "ratio": "16:9",
+      "title": "Long-form YouTube edit",
+      "sub": "Add your project name here",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "12:40",
+      "badge": "YouTube"
+    },
+    {
+      "id": 2,
+      "cat": "reels",
+      "ratio": "9:16",
+      "title": "Fast-cut reel",
+      "sub": "Captions, beats and sound",
+      "video": "https://assets.mixkit.co/videos/preview/mixkit-vertical-video-of-a-woman-posing-with-sunglasses-42459-large.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "0:28",
+      "badge": "Reel"
+    },
+    {
+      "id": 3,
+      "cat": "ads",
+      "ratio": "9:16",
+      "title": "Product ad",
+      "sub": "Motion graphics and grade",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "0:30",
+      "badge": "Ad"
+    },
+    {
+      "id": 4,
+      "cat": "thumbnails",
+      "ratio": "1:1",
+      "title": "Thumbnail design",
+      "sub": "Built to earn the click",
+      "video": "",
+      "preview": "",
+      "poster": "",
+      "dur": "",
+      "badge": "Thumbnail"
+    },
+    {
+      "id": 5,
+      "cat": "motion",
+      "ratio": "1:1",
+      "title": "Animated titles",
+      "sub": "After Effects",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "0:12",
+      "badge": "Motion"
+    },
+    {
+      "id": 6,
+      "cat": "youtube",
+      "ratio": "16:9",
+      "title": "Vlog edit",
+      "sub": "Story-first cutting and grade",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "8:15",
+      "badge": "YouTube"
+    },
+    {
+      "id": 7,
+      "cat": "reels",
+      "ratio": "9:16",
+      "title": "Trend reel",
+      "sub": "Rhythm and text on beat",
+      "video": "https://assets.mixkit.co/videos/preview/mixkit-vertical-video-of-a-woman-posing-with-sunglasses-42459-large.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "0:21",
+      "badge": "Reel"
+    },
+    {
+      "id": 8,
+      "cat": "sound",
+      "ratio": "16:9",
+      "title": "Sound design",
+      "sub": "Clean voice and punchy effects",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "",
+      "badge": "Sound"
+    },
+    {
+      "id": 9,
+      "cat": "grading",
+      "ratio": "9:16",
+      "title": "Grade test",
+      "sub": "Look development",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "0:15",
+      "badge": "Grade"
+    },
+    {
+      "id": 10,
+      "cat": "motion",
+      "ratio": "16:9",
+      "title": "Logo animation",
+      "sub": "A short brand sting",
+      "video": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      "preview": "",
+      "poster": "",
+      "dur": "0:06",
+      "badge": "Motion"
+    }
   ]
 }
