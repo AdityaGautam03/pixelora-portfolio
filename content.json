@@ -1,11 +1,11 @@
 {
   "config": {
-    "instagramUsername": "INSTAGRAM_USERNAME",
-    "instagramLink": "INSTAGRAM_USERNAME",
+    "instagramUsername": "pixelora.3",
+    "instagramLink": "pixelora.3",
     "email": "hello@pixelora.in",
     "showreel": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     "social": {
-      "instagram": "",
+      "instagram": "https://www.instagram.com/pixelora.3/?hl=en#",
       "youtube": "",
       "linkedin": "",
       "behance": ""
