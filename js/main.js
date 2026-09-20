@@ -131,13 +131,9 @@
   })();
 
   /* ---------------------------------------------------- 1.1 Dynamic CMS Sync */
-  (function dynamicContent() {
+  function applyContentData(data) {
+    if (!data) return;
     try {
-      var raw = localStorage.getItem('PIXELORA_CONTENT');
-      if (!raw) return;
-      var data = JSON.parse(raw);
-      if (!data) return;
-
       // 1. Override CONFIG if provided
       if (data.config) {
         for (var k in data.config) {
@@ -151,6 +147,7 @@
             }
           }
         }
+        if (typeof updateContactsAndLinks === 'function') updateContactsAndLinks();
       }
 
       // 2. Override Text content
@@ -269,6 +266,49 @@
     } catch (e) {
       console.warn('Could not sync dynamic content:', e);
     }
+  }
+
+  function fetchCloudContent() {
+    var endpoints = [
+      '/api/content?t=' + Date.now(),
+      'content.json?t=' + Date.now(),
+      'https://raw.githubusercontent.com/AdityaGautam03/pixelora-portfolio/main/content.json?t=' + Date.now()
+    ];
+
+    function tryNext(index) {
+      if (index >= endpoints.length) return;
+      fetch(endpoints[index])
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          if (json && (json.text || json.projects || json.config)) {
+            try {
+              localStorage.setItem('PIXELORA_CONTENT', JSON.stringify(json));
+            } catch(e) {}
+            applyContentData(json);
+          } else {
+            tryNext(index + 1);
+          }
+        })
+        .catch(function() {
+          tryNext(index + 1);
+        });
+    }
+
+    tryNext(0);
+  }
+
+  (function dynamicContent() {
+    try {
+      var raw = localStorage.getItem('PIXELORA_CONTENT');
+      if (raw) {
+        var data = JSON.parse(raw);
+        if (data) applyContentData(data);
+      }
+    } catch (e) {}
+    fetchCloudContent();
   })();
 
   /* ---------------------------------------------------- 1.2 Tile Video Autoplay */
@@ -385,7 +425,7 @@
   document.addEventListener('click', playAllTileVideos, { passive: true, once: true });
 
   /* ------------------------------------------------------- 2. Contact links */
-  (function contacts() {
+  function updateContactsAndLinks() {
     var rawIg = CONFIG.instagramLink || CONFIG.instagramUsername || 'INSTAGRAM_USERNAME';
     var igChat = '';
     var igUser = '';
@@ -417,13 +457,17 @@
       }
       if (url) { a.href = url; a.target = '_blank'; a.rel = 'noopener'; }
     });
+    var reel = $('#showreel');
+    if (reel && CONFIG.showreel) reel.setAttribute('data-video', CONFIG.showreel);
+  }
+
+  (function contacts() {
+    updateContactsAndLinks();
     // links that still have no destination should not jump to the top of the page
     document.addEventListener('click', function (e) {
       var a = e.target.closest && e.target.closest('a[href="#"]');
       if (a) e.preventDefault();
     });
-    var reel = $('#showreel');
-    if (reel && CONFIG.showreel) reel.setAttribute('data-video', CONFIG.showreel);
   })();
 
   /* ---------------------------------------------------------- 3. Waveforms */

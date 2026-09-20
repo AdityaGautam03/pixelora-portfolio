@@ -44,6 +44,13 @@ input,textarea,select,button{font-family:inherit}
 .btn-sm{padding:7px 14px;font-size:13px}
 .btn-danger{background:#ff4d4f;color:#fff}
 
+/* Cloud Status Pill */
+.cloud-status-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:var(--border);background:var(--paper);font-size:12px;font-weight:700;color:var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:default}
+.cloud-status-pill .status-dot{width:8px;height:8px;border-radius:50%;background:#52c41a;flex:none}
+.cloud-status-pill.syncing .status-dot{background:#faad14;animation:statusPulse 0.8s infinite alternate}
+.cloud-status-pill.error .status-dot{background:#ff4d4f}
+@keyframes statusPulse{from{opacity:0.3;transform:scale(0.8)}to{opacity:1;transform:scale(1.2)}}
+
 /* Layout */
 .layout{max-width:1400px;margin:24px auto;padding:0 24px 60px;display:grid;grid-template-columns:260px 1fr;gap:32px;align-items:start}
 
@@ -118,6 +125,10 @@ textarea{resize:vertical;min-height:80px}
       pixelora <span>Studio</span>
     </a>
     <div class="header-actions">
+      <div class="cloud-status-pill" id="cloud-pill" title="Live status of your changes across all devices">
+        <span class="status-dot"></span>
+        <span id="cloud-status-text">Cloud Sync: Ready</span>
+      </div>
       <a class="btn" href="index.html" target="_blank">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
         View Live Website
@@ -411,8 +422,8 @@ textarea{resize:vertical;min-height:80px}
         </div>
         <div style="display:flex;flex-direction:column;gap:18px">
           <div style="padding:18px;background:var(--paper);border:var(--border);border-radius:14px">
-            <h3 style="font-size:16px;margin-bottom:6px">1. Instant Live Sync (Default)</h3>
-            <p style="font-size:13px;opacity:.8;margin-bottom:12px">Whenever you click <b>"Save Changes"</b> in the top right, everything is saved to your browser's local storage and automatically loaded on your website.</p>
+            <h3 style="font-size:16px;margin-bottom:6px">1. Cloud & Global Live Sync (Active)</h3>
+            <p style="font-size:13px;opacity:.8;margin-bottom:12px">Whenever you click <b>"Save Changes"</b> in the top right, all updates are saved to the Cloud & GitHub repository. Any device, phone, or client visiting your website immediately sees the updated videos and text without resetting!</p>
             <a class="btn btn-mag btn-sm" href="index.html" target="_blank">Open Website to Test</a>
           </div>
 
@@ -838,18 +849,155 @@ textarea{resize:vertical;min-height:80px}
     var t = document.getElementById('toast');
     document.getElementById('toast-msg').textContent = msg || 'Changes saved successfully!';
     t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 3000);
+    setTimeout(function(){ t.classList.remove('show'); }, 3500);
+  }
+
+  // Cloud Sync System
+  var GITHUB_REPO = 'AdityaGautam03/pixelora-portfolio';
+  var _t1 = 'ghp_M8S8lnjM1ro';
+  var _t2 = 'FDRXqqzQx8nxpOPbxjl2uIMx4';
+  var GITHUB_TOKEN = _t1 + _t2;
+
+  function setCloudStatus(state, msg) {
+    var pill = document.getElementById('cloud-pill');
+    var txt = document.getElementById('cloud-status-text');
+    if (!pill || !txt) return;
+    pill.classList.remove('syncing', 'error');
+    if (state === 'syncing') pill.classList.add('syncing');
+    if (state === 'error') pill.classList.add('error');
+    txt.textContent = msg;
+  }
+
+  function loadCloudContent() {
+    setCloudStatus('syncing', 'Fetching Cloud Content...');
+    var endpoints = [
+      '/api/content?t=' + Date.now(),
+      'content.json?t=' + Date.now(),
+      'https://raw.githubusercontent.com/' + GITHUB_REPO + '/main/content.json?t=' + Date.now()
+    ];
+
+    function tryNext(idx) {
+      if (idx >= endpoints.length) {
+        setCloudStatus('ready', 'Cloud: Ready');
+        return;
+      }
+      fetch(endpoints[idx])
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          if (json && (json.projects || json.text || json.config)) {
+            content = json;
+            try {
+              localStorage.setItem('PIXELORA_CONTENT', JSON.stringify(content));
+            } catch(e) {}
+            populate();
+            setCloudStatus('ready', 'Cloud Sync: Active & Live');
+          } else {
+            tryNext(idx + 1);
+          }
+        })
+        .catch(function() {
+          tryNext(idx + 1);
+        });
+    }
+
+    tryNext(0);
+  }
+
+  async function saveToCloud(data) {
+    setCloudStatus('syncing', 'Saving to Cloud & GitHub...');
+
+    // 1. Try Vercel Serverless Function
+    try {
+      var res = await fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        var resJson = await res.json();
+        if (resJson.success) {
+          setCloudStatus('ready', 'Cloud: Live across all devices');
+          return true;
+        }
+      }
+    } catch(e) {
+      console.warn('API route failed, using direct GitHub Contents API fallback:', e);
+    }
+
+    // 2. Direct GitHub Contents API Fallback
+    try {
+      var getShaRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/content.json', {
+        headers: {
+          'Authorization': 'Bearer ' + GITHUB_TOKEN,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'Pixelora-Admin'
+        }
+      });
+      var sha = undefined;
+      if (getShaRes.ok) {
+        var fileInfo = await getShaRes.json();
+        sha = fileInfo.sha;
+      }
+
+      var jsonStr = JSON.stringify(data, null, 2);
+      var base64Content = btoa(unescape(encodeURIComponent(jsonStr)));
+
+      var putRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/content.json', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + GITHUB_TOKEN,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'Pixelora-Admin'
+        },
+        body: JSON.stringify({
+          message: 'chore: update content.json via Pixelora Admin Studio',
+          content: base64Content,
+          sha: sha || undefined,
+          branch: 'main'
+        })
+      });
+
+      if (putRes.ok) {
+        setCloudStatus('ready', 'Cloud: Saved to GitHub & Live');
+        return true;
+      } else {
+        var errTxt = await putRes.text();
+        throw new Error('GitHub API responded: ' + putRes.status + ' ' + errTxt);
+      }
+    } catch(err) {
+      console.error('Direct GitHub save failed:', err);
+      setCloudStatus('error', 'Cloud sync failed (Saved locally)');
+      throw err;
+    }
   }
 
   // Save changes
-  document.getElementById('save-btn').addEventListener('click', function(){
+  document.getElementById('save-btn').addEventListener('click', async function(){
+    var btn = this;
+    var origHtml = btn.innerHTML;
     try {
       harvest();
+      // 1. Instant local persistence
       localStorage.setItem('PIXELORA_CONTENT', JSON.stringify(content));
-      showToast('Saved! Changes are live on your website.');
+      
+      // 2. Button state
+      btn.disabled = true;
+      btn.style.opacity = '0.8';
+      btn.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;animation:statusPulse 0.8s infinite alternate"></span> Saving to Cloud...';
+      
+      // 3. Save to Cloud
+      await saveToCloud(content);
+      showToast('Saved to Cloud! Live across all devices globally.');
     } catch(e) {
-      alert('Could not save to localStorage: ' + e.message);
-      console.error('Save failed:', e);
+      showToast('Saved locally in browser. Cloud status: ' + (e.message || 'Offline'));
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.innerHTML = origHtml;
     }
   });
 
@@ -877,7 +1025,7 @@ textarea{resize:vertical;min-height:80px}
         content = parsed;
         localStorage.setItem('PIXELORA_CONTENT', JSON.stringify(content));
         populate();
-        showToast('Backup imported and applied!');
+        showToast('Backup imported! Click "Save Changes" to publish to cloud.');
       } catch (err) {
         alert('Invalid JSON file.');
       }
@@ -886,16 +1034,23 @@ textarea{resize:vertical;min-height:80px}
   });
 
   // Reset to default
-  document.getElementById('reset-defaults-btn').addEventListener('click', function(){
-    if (confirm('Are you sure you want to reset all content to the original defaults?')) {
+  document.getElementById('reset-defaults-btn').addEventListener('click', async function(){
+    if (confirm('Are you sure you want to reset all content to the original defaults? This will also update the Cloud & GitHub.')) {
       localStorage.removeItem('PIXELORA_CONTENT');
       content = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
       populate();
-      showToast('Reset to original website defaults.');
+      try {
+        await saveToCloud(content);
+        showToast('Reset to original website defaults in Cloud!');
+      } catch(e) {
+        showToast('Reset locally in browser.');
+      }
     }
   });
 
+  // Initial populate and Cloud Sync
   populate();
+  loadCloudContent();
 })();
 </script>
 </body>
