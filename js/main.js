@@ -19,7 +19,7 @@
   var CONFIG = {
     instagramLink: '',                      // full Instagram link or username
     instagramUsername: 'INSTAGRAM_USERNAME', // your Instagram username (without @)
-    email: 'hello@pixelora.in',             // replace with your real email
+    email: 'adityagautam0305@gmail.com',     // your primary contact email
     showreel: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', // MP4 path or YouTube/Vimeo link
     social: {
       instagram: '',                        // left blank to use https://instagram.com/{instagramUsername}
@@ -445,9 +445,57 @@
         a.textContent = (igUser && igUser !== 'INSTAGRAM_USERNAME') ? 'Instagram @' + igUser : 'DM on Instagram';
       }
     });
+    function showToast(msg) {
+      var toast = document.getElementById('toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        toast.innerHTML = '<span class="dot"></span><span id="toast-msg"></span>';
+        document.body.appendChild(toast);
+      }
+      var txt = document.getElementById('toast-msg') || toast;
+      txt.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(function () {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
     $$('[data-email]').forEach(function (a) {
-      a.href = 'mailto:' + CONFIG.email;
-      a.textContent = CONFIG.email;
+      var email = CONFIG.email || 'adityagautam0305@gmail.com';
+      a.href = 'mailto:' + email;
+      a.textContent = email;
+
+      if (!a._hasEmailHandler) {
+        a._hasEmailHandler = true;
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          var targetEmail = CONFIG.email || 'adityagautam0305@gmail.com';
+          var subject = encodeURIComponent('Video Editing Project Inquiry - Pixelora');
+
+          // Copy to clipboard
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(targetEmail).catch(function(){});
+          }
+
+          var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+          if (isMobile) {
+            window.location.href = 'mailto:' + targetEmail + '?subject=' + subject;
+          } else {
+            // On desktop/browser: Open Gmail compose in a new tab so it always opens reliably
+            var gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(targetEmail) + '&su=' + subject;
+            window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+            // Also trigger standard mailto for native mail clients (Outlook, Apple Mail, etc.)
+            setTimeout(function() {
+              window.location.href = 'mailto:' + targetEmail + '?subject=' + subject;
+            }, 300);
+          }
+
+          showToast('Opening email for ' + targetEmail + ' (copied to clipboard!)');
+        });
+      }
     });
     $$('[data-social]').forEach(function (a) {
       var network = a.getAttribute('data-social');
@@ -466,7 +514,7 @@
     // links that still have no destination should not jump to the top of the page
     document.addEventListener('click', function (e) {
       var a = e.target.closest && e.target.closest('a[href="#"]');
-      if (a) e.preventDefault();
+      if (a && !a.hasAttribute('data-email') && !a.hasAttribute('data-ig')) e.preventDefault();
     });
   })();
 
