@@ -156,7 +156,7 @@ body.dark{background:var(--ink);color:var(--white)}
 .m2{position:absolute;left:34%;right:-5%;bottom:0;height:36%;background:var(--ink);clip-path:polygon(0 100%,14% 42%,40% 64%,62% 10%,100% 100%)}
 .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,17,69,0) 58%,rgba(26,17,69,.9) 100%);z-index:2}
 .badge{position:absolute;top:16px;left:16px;z-index:4;background:var(--white);color:var(--ink);border-radius:999px;padding:5px 13px;font-family:var(--display);font-weight:500;font-size:13px}
-.dur{position:absolute;top:16px;right:16px;z-index:4;background:var(--ink);color:var(--white);border-radius:8px;padding:4px 9px;font-family:var(--mono);font-size:12px}
+.dur, .price{display:none !important}
 .cap{position:absolute;left:20px;right:20px;bottom:18px;z-index:4;color:var(--white)}
 .cap h3{font-size:21px;letter-spacing:-.02em;line-height:1.15}
 .cap p{font-size:14px;opacity:.85;margin-top:3px;font-family:var(--display);font-weight:300}

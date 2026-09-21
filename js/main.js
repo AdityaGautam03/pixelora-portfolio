@@ -202,7 +202,7 @@
           if (!tile && grid) {
             tile = document.createElement('article');
             tile.className = 'tile';
-            tile.innerHTML = '<span class="badge"></span><span class="dur"></span><div class="shade"></div><div class="cap"><h3></h3><p></p></div><button type="button" class="tile-open"></button>';
+            tile.innerHTML = '<span class="badge"></span><div class="shade"></div><div class="cap"><h3></h3><p></p></div><button type="button" class="tile-open"></button>';
             grid.appendChild(tile);
             tiles.push(tile);
           }
