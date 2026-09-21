@@ -623,24 +623,88 @@ textarea{resize:vertical;min-height:80px}
     }
   }
 
+  async function uploadFileToCloud(file) {
+    if (!file) throw new Error('No file selected');
+    if (file.size > 25 * 1024 * 1024) {
+      throw new Error('File is ' + Math.round(file.size / (1024 * 1024)) + 'MB. Direct file uploads are limited to 25MB. For large edits, paste a YouTube link (Unlisted or Public) or Vimeo link for instant 4K streaming!');
+    }
+
+    var base64Content = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var res = e.target.result;
+        var b64 = res.split(',')[1];
+        resolve(b64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+    var cleanBase = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 20);
+    var filename = cleanBase + '_' + Date.now().toString(36) + '.' + ext;
+    var assetPath = 'assets/uploads/' + filename;
+
+    var putRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + assetPath, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + GITHUB_TOKEN,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Pixelora-Admin'
+      },
+      body: JSON.stringify({
+        message: 'upload asset: ' + filename,
+        content: base64Content,
+        branch: 'main'
+      })
+    });
+
+    if (!putRes.ok) {
+      var err = await putRes.text();
+      console.error('Asset upload failed:', err);
+      throw new Error('Cloud asset upload failed (HTTP ' + putRes.status + '). For large videos, paste a YouTube link.');
+    }
+
+    return assetPath;
+  }
+
   function wireFileUpload(fileInputEl, targetInputEl, onDone) {
     if (!fileInputEl || !targetInputEl) return;
-    fileInputEl.addEventListener('change', function(e){
+    fileInputEl.addEventListener('change', async function(e){
       var file = e.target.files && e.target.files[0];
       if (!file) return;
-      if (file.size < 5 * 1024 * 1024) {
-        var reader = new FileReader();
-        reader.onload = function(evt) {
-          targetInputEl.value = evt.target.result;
-          if (onDone) onDone(evt.target.result, file.name);
-          showToast('Loaded ' + file.name + ' (saved permanently)');
-        };
-        reader.readAsDataURL(file);
-      } else {
-        var blobUrl = URL.createObjectURL(file);
-        targetInputEl.value = blobUrl;
-        if (onDone) onDone(blobUrl, file.name);
-        showToast('Loaded ' + file.name + ' for this session (for permanent hosting place in assets/)');
+
+      // 1. Instant local preview
+      var blobUrl = URL.createObjectURL(file);
+      if (onDone) onDone(blobUrl, file.name);
+
+      // 2. Button state
+      var labelBtn = fileInputEl.closest('label');
+      var origText = labelBtn ? labelBtn.childNodes[0].textContent.trim() : 'Select File';
+      if (labelBtn) {
+        labelBtn.style.pointerEvents = 'none';
+        labelBtn.style.opacity = '0.7';
+        labelBtn.childNodes[0].textContent = 'Uploading... ';
+      }
+
+      showToast('Uploading ' + file.name + ' to Cloud Assets...');
+
+      try {
+        var assetPath = await uploadFileToCloud(file);
+        targetInputEl.value = assetPath;
+        targetInputEl.dispatchEvent(new Event('input'));
+        showToast('Uploaded ' + file.name + ' to Cloud Assets! Click "Save Changes" to publish.');
+      } catch (err) {
+        console.warn('File upload note:', err.message);
+        alert(err.message);
+        showToast(err.message);
+      } finally {
+        if (labelBtn) {
+          labelBtn.style.pointerEvents = 'auto';
+          labelBtn.style.opacity = '1';
+          labelBtn.childNodes[0].textContent = origText;
+        }
       }
     });
   }
@@ -889,9 +953,7 @@ textarea{resize:vertical;min-height:80px}
         .then(function(json) {
           if (json && (json.projects || json.text || json.config)) {
             content = json;
-            try {
-              localStorage.setItem('PIXELORA_CONTENT', JSON.stringify(content));
-            } catch(e) {}
+            safeSetStorage('PIXELORA_CONTENT', content);
             populate();
             setCloudStatus('ready', 'Cloud Sync: Active & Live');
           } else {
@@ -975,25 +1037,108 @@ textarea{resize:vertical;min-height:80px}
     }
   }
 
+  function safeSetStorage(key, data) {
+    try {
+      localStorage.setItem(key, typeof data === 'string' ? data : JSON.stringify(data));
+    } catch (err) {
+      console.warn('Storage quota exceeded, storing clean metadata locally:', err);
+      try {
+        var obj = typeof data === 'string' ? JSON.parse(data) : JSON.parse(JSON.stringify(data));
+        if (obj && obj.projects) {
+          obj.projects.forEach(function(p) {
+            if (p.video && p.video.indexOf('data:') === 0) p.video = '';
+            if (p.preview && p.preview.indexOf('data:') === 0) p.preview = '';
+          });
+        }
+        if (obj && obj.beforeAfter) {
+          if (obj.beforeAfter.beforeMedia && obj.beforeAfter.beforeMedia.indexOf('data:') === 0) obj.beforeAfter.beforeMedia = '';
+          if (obj.beforeAfter.afterMedia && obj.beforeAfter.afterMedia.indexOf('data:') === 0) obj.beforeAfter.afterMedia = '';
+        }
+        localStorage.setItem(key, JSON.stringify(obj));
+      } catch(e) {}
+    }
+  }
+
+  async function cleanAndUploadBase64Media(data) {
+    if (!data) return;
+
+    async function checkItem(obj, key, prefix) {
+      if (obj && obj[key] && typeof obj[key] === 'string' && obj[key].indexOf('data:') === 0) {
+        var parts = obj[key].split(',');
+        if (parts.length === 2 && parts[1].length > 500) {
+          var mimeMatch = parts[0].match(/data:(.*?);/);
+          var mime = mimeMatch ? mimeMatch[1] : 'video/mp4';
+          var ext = mime.indexOf('image') > -1 ? (mime.split('/')[1] || 'png') : 'mp4';
+          var filename = prefix + '_' + Date.now().toString(36) + '.' + ext;
+          var assetPath = 'assets/uploads/' + filename;
+
+          setCloudStatus('syncing', 'Uploading media file to Cloud Assets...');
+          try {
+            var putRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + assetPath, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'Bearer ' + GITHUB_TOKEN,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Pixelora-Admin'
+              },
+              body: JSON.stringify({
+                message: 'upload: ' + filename,
+                content: parts[1],
+                branch: 'main'
+              })
+            });
+            if (putRes.ok) {
+              obj[key] = assetPath;
+            }
+          } catch(e) {
+            console.error('Auto upload base64 failed:', e);
+          }
+        }
+      }
+    }
+
+    if (data.projects) {
+      for (var i = 0; i < data.projects.length; i++) {
+        await checkItem(data.projects[i], 'video', 'proj_' + (i + 1));
+      }
+    }
+    if (data.beforeAfter) {
+      await checkItem(data.beforeAfter, 'beforeMedia', 'ba_before');
+      await checkItem(data.beforeAfter, 'afterMedia', 'ba_after');
+    }
+    if (data.config) {
+      await checkItem(data.config, 'showreel', 'showreel');
+    }
+  }
+
   // Save changes
   document.getElementById('save-btn').addEventListener('click', async function(){
     var btn = this;
     var origHtml = btn.innerHTML;
     try {
       harvest();
-      // 1. Instant local persistence
-      localStorage.setItem('PIXELORA_CONTENT', JSON.stringify(content));
       
-      // 2. Button state
+      // 1. Button state
       btn.disabled = true;
       btn.style.opacity = '0.8';
       btn.innerHTML = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;animation:statusPulse 0.8s infinite alternate"></span> Saving to Cloud...';
       
-      // 3. Save to Cloud
+      // 2. Automatically upload any raw base64 data to Cloud Assets
+      await cleanAndUploadBase64Media(content);
+
+      // 3. Instant safe local persistence (never throws quota errors)
+      safeSetStorage('PIXELORA_CONTENT', content);
+      
+      // 4. Save to Cloud & GitHub
       await saveToCloud(content);
+
+      // 5. Update UI with clean asset paths
+      populate();
+
       showToast('Saved to Cloud! Live across all devices globally.');
     } catch(e) {
-      showToast('Saved locally in browser. Cloud status: ' + (e.message || 'Offline'));
+      showToast('Cloud status: ' + (e.message || 'Offline'));
     } finally {
       btn.disabled = false;
       btn.style.opacity = '1';
@@ -1023,7 +1168,7 @@ textarea{resize:vertical;min-height:80px}
       try {
         var parsed = JSON.parse(evt.target.result);
         content = parsed;
-        localStorage.setItem('PIXELORA_CONTENT', JSON.stringify(content));
+        safeSetStorage('PIXELORA_CONTENT', content);
         populate();
         showToast('Backup imported! Click "Save Changes" to publish to cloud.');
       } catch (err) {
