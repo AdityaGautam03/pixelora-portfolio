@@ -65,18 +65,6 @@
   ],
   "projects": [
     {
-      "id": 1,
-      "cat": "youtube",
-      "ratio": "16:9",
-      "title": "Long-form YouTube edit",
-      "sub": "Add your project name here",
-      "video": "blob:https://pixelora-edits.vercel.app/8fd864b6-322a-424d-9ac8-3f14176e1fbc",
-      "preview": "",
-      "poster": "",
-      "dur": "12:40",
-      "badge": "YouTube"
-    },
-    {
       "id": 2,
       "cat": "reels",
       "ratio": "9:16",
@@ -183,6 +171,18 @@
       "poster": "",
       "dur": "0:06",
       "badge": "Motion"
+    },
+    {
+      "id": 1789995764691,
+      "cat": "youtube",
+      "ratio": "16:9",
+      "title": "New Video Project",
+      "sub": "Client edit / description",
+      "video": "",
+      "preview": "",
+      "poster": "",
+      "dur": "0:30",
+      "badge": "Video"
     }
   ]
 }
