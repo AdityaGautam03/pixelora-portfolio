@@ -191,12 +191,22 @@
         });
       }
 
-      // 4. Override Work Tiles
+      // 4. Override Work Tiles (exclude Before & After comparison tile)
       if (data.projects && data.projects.length) {
-        var tiles = $$('.grid .tile');
+        var tiles = $$('.grid .tile').filter(function(t) {
+          return !t.querySelector('.ba');
+        });
+        var grid = $('.grid');
         data.projects.forEach(function(pj, idx) {
-          if (tiles[idx]) {
-            var tile = tiles[idx];
+          var tile = tiles[idx];
+          if (!tile && grid) {
+            tile = document.createElement('article');
+            tile.className = 'tile';
+            tile.innerHTML = '<span class="badge"></span><span class="dur"></span><div class="shade"></div><div class="cap"><h3></h3><p></p></div><button type="button" class="tile-open"></button>';
+            grid.appendChild(tile);
+            tiles.push(tile);
+          }
+          if (tile) {
             // Aspect Ratio layout
             if (pj.ratio) {
               tile.classList.remove('w2', 'h2r');
@@ -222,7 +232,7 @@
               var badge = $('.badge', tile);
               if (badge) badge.textContent = pj.cat.charAt(0).toUpperCase() + pj.cat.slice(1);
             }
-            // Autoplay video in work tile
+            // Autoplay video or photo in work tile
             var vidSrc = (pj.video !== undefined && pj.video !== '') ? pj.video : (pj.preview || tile.getAttribute('data-video') || '');
             applyTileVideo(tile, vidSrc);
           }
@@ -233,6 +243,19 @@
       if (data.beforeAfter) {
         var baTile = $('.tile .ba');
         if (baTile) {
+          var parentTile = baTile.closest('.tile');
+          if (parentTile) {
+            // Purge any video/photo/iframe accidentally injected into the Before & After tile
+            var strayMedia = parentTile.querySelectorAll('.tile-video, .tile-photo, .tile-iframe');
+            strayMedia.forEach(function(el){ el.remove(); });
+            parentTile.classList.remove('has-video');
+            parentTile.setAttribute('data-title', 'Before and after');
+            parentTile.setAttribute('data-sub', 'Flat log footage to the final look');
+            var baH3 = $('.cap h3', parentTile);
+            if (baH3) baH3.textContent = 'Before and after';
+            var baP = $('.cap p', parentTile);
+            if (baP) baP.textContent = 'Flat log footage to the final look';
+          }
           var beforeScene = $('.scene.before', baTile);
           var afterScene = $('.scene:not(.before)', baTile);
           function setBAMedia(scene, src) {
@@ -436,8 +459,9 @@
     oldIf.forEach(function(el){ el.remove(); });
   }
 
-  // Ensure all tiles with data-video autoplay
+  // Ensure all tiles with data-video autoplay (skip Before & After slider tile)
   $$('.grid .tile').forEach(function(tile) {
+    if (tile.querySelector('.ba')) return;
     if (!tile.classList.contains('has-video')) {
       var vid = tile.getAttribute('data-video') || tile.getAttribute('data-preview');
       if (vid) applyTileVideo(tile, vid);
