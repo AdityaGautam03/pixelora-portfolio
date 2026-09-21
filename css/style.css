@@ -135,7 +135,7 @@ body.dark{background:var(--ink);color:var(--white)}
 .tile:hover{transform:translateY(-4px)}
 .w2{grid-column:span 2}.h2r{grid-row:span 2}
 .scene{position:absolute;inset:0;overflow:hidden;background:linear-gradient(180deg,#FFC933 0%,#FF7A59 36%,#FF2E7E 62%,#3B2C8C 100%)}
-.tile-video, .tile-iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;pointer-events:none;border:none}
+.tile-video, .tile-iframe, .tile-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;pointer-events:none;border:none}
 .tile.has-video .scene,
 .tile.has-video .reel,
 .tile.has-video .ad,

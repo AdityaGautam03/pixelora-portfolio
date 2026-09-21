@@ -580,7 +580,17 @@ textarea{resize:vertical;min-height:80px}
     return 'ratio-16-9';
   }
 
-  function renderMediaBox(el, url, placeholder) {
+  function isImageUrl(url) {
+    if (!url) return false;
+    return /\.(jpg|jpeg|jpe|jfif|png|webp|gif|svg|avif|bmp)(\?.*)?$/i.test(url) || url.indexOf('data:image') === 0;
+  }
+
+  function isVideoUrl(url) {
+    if (!url) return false;
+    return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url) || url.indexOf('data:video') === 0;
+  }
+
+  function renderMediaBox(el, url, placeholder, isExplicitImage) {
     if (!el) return;
     if (!url) {
       el.innerHTML = '<span style="font-size:12px;opacity:.6">' + (placeholder || 'No Media') + '</span>';
@@ -598,15 +608,18 @@ textarea{resize:vertical;min-height:80px}
       el.innerHTML = '<iframe src="https://player.vimeo.com/video/' + vmMatch[1] + '?autoplay=1&muted=1&loop=1&background=1" style="width:100%;height:100%;border:none;pointer-events:none" allow="autoplay"></iframe>';
       return;
     }
-    var isVid = /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url) || url.indexOf('data:video') === 0 || url.indexOf('blob:') === 0;
-    var isImg = /\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i.test(url) || url.indexOf('data:image') === 0;
 
-    if (isVid) {
-      el.innerHTML = '<video src="' + url + '" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>';
-    } else if (isImg) {
-      el.innerHTML = '<img src="' + url + '" alt="" style="width:100%;height:100%;object-fit:cover">';
+    var isImg = isExplicitImage || isImageUrl(url);
+    var isVid = !isImg && (isVideoUrl(url) || url.indexOf('blob:') === 0);
+
+    var rawFallback = url.indexOf('assets/uploads/') === 0 ? 'https://raw.githubusercontent.com/' + GITHUB_REPO + '/main/' + url : '';
+
+    if (isImg) {
+      el.innerHTML = '<img src="' + url + '" ' + (rawFallback ? 'onerror="if(!this.dataset.retried){this.dataset.retried=\'1\';this.src=\'' + rawFallback + '\';}"' : '') + ' alt="" style="width:100%;height:100%;object-fit:cover">';
+    } else if (isVid) {
+      el.innerHTML = '<video src="' + url + '" ' + (rawFallback ? 'onerror="if(!this.dataset.retried){this.dataset.retried=\'1\';this.src=\'' + rawFallback + '\';}"' : '') + ' autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>';
     } else {
-      el.innerHTML = '<div style="padding:10px;text-align:center"><div style="font-size:11px;font-weight:700;letter-spacing:.05em">LINKED VIDEO</div><div style="font-size:10px;opacity:.7;margin-top:4px;word-break:break-all">' + url + '</div></div>';
+      el.innerHTML = '<div style="padding:10px;text-align:center"><div style="font-size:11px;font-weight:700;letter-spacing:.05em">LINKED MEDIA</div><div style="font-size:10px;opacity:.7;margin-top:4px;word-break:break-all">' + url + '</div></div>';
     }
   }
 
@@ -640,7 +653,9 @@ textarea{resize:vertical;min-height:80px}
       reader.readAsDataURL(file);
     });
 
-    var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+    var ext = (file.name.split('.').pop() || 'png').toLowerCase();
+    if (ext === 'jpe' || ext === 'jfif') ext = 'jpg';
+    if (ext === 'jpeg') ext = 'jpg';
     var cleanBase = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 20);
     var filename = cleanBase + '_' + Date.now().toString(36) + '.' + ext;
     var assetPath = 'assets/uploads/' + filename;
@@ -675,9 +690,11 @@ textarea{resize:vertical;min-height:80px}
       var file = e.target.files && e.target.files[0];
       if (!file) return;
 
+      var isFileImg = file.type ? file.type.startsWith('image/') : /\.(jpg|jpeg|jpe|jfif|png|webp|gif|svg|avif|bmp)$/i.test(file.name);
+
       // 1. Instant local preview
       var blobUrl = URL.createObjectURL(file);
-      if (onDone) onDone(blobUrl, file.name);
+      if (onDone) onDone(blobUrl, isFileImg);
 
       // 2. Button state
       var labelBtn = fileInputEl.closest('label');
@@ -694,7 +711,7 @@ textarea{resize:vertical;min-height:80px}
         var assetPath = await uploadFileToCloud(file);
         targetInputEl.value = assetPath;
         targetInputEl.dispatchEvent(new Event('input'));
-        showToast('Uploaded ' + file.name + ' to Cloud Assets! Click "Save Changes" to publish.');
+        showToast('Uploaded ' + file.name + '! Click "Save Changes" to publish.');
       } catch (err) {
         console.warn('File upload note:', err.message);
         alert(err.message);
@@ -711,11 +728,17 @@ textarea{resize:vertical;min-height:80px}
 
   document.getElementById('ba-before').addEventListener('input', updateBAPreviews);
   document.getElementById('ba-after').addEventListener('input', updateBAPreviews);
-  wireFileUpload(document.getElementById('ba-file-before'), document.getElementById('ba-before'), updateBAPreviews);
-  wireFileUpload(document.getElementById('ba-file-after'), document.getElementById('ba-after'), updateBAPreviews);
+  wireFileUpload(document.getElementById('ba-file-before'), document.getElementById('ba-before'), function(blobUrl, isImg){
+    renderMediaBox(document.getElementById('ba-prev-box-before'), blobUrl, 'No Before Media', isImg);
+  });
+  wireFileUpload(document.getElementById('ba-file-after'), document.getElementById('ba-after'), function(blobUrl, isImg){
+    renderMediaBox(document.getElementById('ba-prev-box-after'), blobUrl, 'No After Media', isImg);
+  });
 
   document.getElementById('cfg-showreel').addEventListener('input', updateShowreelPreview);
-  wireFileUpload(document.getElementById('cfg-showreel-file'), document.getElementById('cfg-showreel'), updateShowreelPreview);
+  wireFileUpload(document.getElementById('cfg-showreel-file'), document.getElementById('cfg-showreel'), function(blobUrl, isImg){
+    renderMediaBox(document.getElementById('showreel-prev-box'), blobUrl, 'No Showreel Video', isImg);
+  });
 
   function renderServices() {
     var cont = document.getElementById('services-container');
@@ -792,7 +815,7 @@ textarea{resize:vertical;min-height:80px}
       cont.appendChild(card);
 
       var previewEl = card.querySelector('.project-preview');
-      renderMediaBox(previewEl, proj.video, 'No Video Linked');
+      renderMediaBox(previewEl, proj.video, 'No Media Linked');
 
       // Aspect ratio change listener
       card.querySelector('.pj-ratio').addEventListener('change', function(e){
@@ -803,13 +826,13 @@ textarea{resize:vertical;min-height:80px}
       // Video input listener
       var videoInput = card.querySelector('.pj-video');
       videoInput.addEventListener('input', function(e){
-        renderMediaBox(previewEl, e.target.value.trim(), 'No Video Linked');
+        renderMediaBox(previewEl, e.target.value.trim(), 'No Media Linked');
       });
 
       // File picker listener
       var fileInput = card.querySelector('.pj-file');
-      wireFileUpload(fileInput, videoInput, function(mediaUrl){
-        renderMediaBox(previewEl, mediaUrl, 'No Video Linked');
+      wireFileUpload(fileInput, videoInput, function(mediaUrl, isImg){
+        renderMediaBox(previewEl, mediaUrl, 'No Media Linked', isImg);
       });
     });
 
@@ -1069,6 +1092,7 @@ textarea{resize:vertical;min-height:80px}
           var mimeMatch = parts[0].match(/data:(.*?);/);
           var mime = mimeMatch ? mimeMatch[1] : 'video/mp4';
           var ext = mime.indexOf('image') > -1 ? (mime.split('/')[1] || 'png') : 'mp4';
+          if (ext === 'jpeg' || ext === 'jpe' || ext === 'jfif') ext = 'jpg';
           var filename = prefix + '_' + Date.now().toString(36) + '.' + ext;
           var assetPath = 'assets/uploads/' + filename;
 

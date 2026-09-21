@@ -237,17 +237,28 @@
           var afterScene = $('.scene:not(.before)', baTile);
           function setBAMedia(scene, src) {
             if (!scene || !src) return;
-            var isVideo = /\.(mp4|webm|mov)(\?.*)?$/i.test(src) || src.indexOf('data:video') === 0 || src.indexOf('blob:') === 0;
+            var isVideo = /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(src) || src.indexOf('data:video') === 0;
+            var rawFallback = src.indexOf('assets/uploads/') === 0 ? 'https://raw.githubusercontent.com/AdityaGautam03/pixelora-portfolio/main/' + src : '';
             scene.innerHTML = '';
             if (isVideo) {
               var v = document.createElement('video');
               v.src = src; v.autoplay = true; v.muted = true; v.loop = true; v.playsInline = true;
               v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('loop', ''); v.setAttribute('autoplay', '');
+              if (rawFallback) {
+                v.onerror = function() {
+                  if (!this.dataset.retried) { this.dataset.retried = '1'; this.src = rawFallback; }
+                };
+              }
               scene.appendChild(v);
               v.play().catch(function(){});
             } else {
               var img = document.createElement('img');
               img.src = src; img.alt = 'Comparison';
+              if (rawFallback) {
+                img.onerror = function() {
+                  if (!this.dataset.retried) { this.dataset.retried = '1'; this.src = rawFallback; }
+                };
+              }
               scene.appendChild(img);
             }
           }
@@ -311,19 +322,24 @@
     fetchCloudContent();
   })();
 
-  /* ---------------------------------------------------- 1.2 Tile Video Autoplay */
+  /* ---------------------------------------------------- 1.2 Tile Video / Photo Autoplay */
+  function isImageUrl(url) {
+    if (!url) return false;
+    return /\.(jpg|jpeg|jpe|jfif|png|webp|gif|svg|avif|bmp)(\?.*)?$/i.test(url) || url.indexOf('data:image') === 0;
+  }
+
   function applyTileVideo(tile, vidSrc) {
     if (!tile) return;
     if (!vidSrc) {
       tile.classList.remove('has-video');
-      var oldV = tile.querySelector('.tile-video, .tile-iframe');
+      var oldV = tile.querySelector('.tile-video, .tile-iframe, .tile-photo');
       if (oldV) oldV.remove();
       return;
     }
 
     tile.classList.add('has-video');
 
-    // YouTube embed
+    // 1. YouTube embed
     var ytMatch = vidSrc.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/i);
     if (ytMatch) {
       var ytId = ytMatch[1];
@@ -337,12 +353,12 @@
         tile.appendChild(existingIframe);
       }
       if (existingIframe.src !== ytSrc) existingIframe.src = ytSrc;
-      var oldVid = tile.querySelector('video.tile-video');
+      var oldVid = tile.querySelector('video.tile-video, img.tile-photo');
       if (oldVid) oldVid.remove();
       return;
     }
 
-    // Vimeo embed
+    // 2. Vimeo embed
     var vmMatch = vidSrc.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)/i);
     if (vmMatch) {
       var vmId = vmMatch[1];
@@ -356,12 +372,36 @@
         tile.appendChild(existingVimeo);
       }
       if (existingVimeo.src !== vmSrc) existingVimeo.src = vmSrc;
-      var oldVid2 = tile.querySelector('video.tile-video');
+      var oldVid2 = tile.querySelector('video.tile-video, img.tile-photo');
       if (oldVid2) oldVid2.remove();
       return;
     }
 
-    // Direct MP4 / WebM / blob / data video
+    var rawFallback = vidSrc.indexOf('assets/uploads/') === 0 ? 'https://raw.githubusercontent.com/AdityaGautam03/pixelora-portfolio/main/' + vidSrc : '';
+
+    // 3. Photo / Image Artwork (Thumbnails, Posters, Graphic Design)
+    if (isImageUrl(vidSrc)) {
+      var img = tile.querySelector('img.tile-photo');
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'tile-photo';
+        tile.appendChild(img);
+      }
+      if (rawFallback) {
+        img.onerror = function() {
+          if (!this.dataset.retried) {
+            this.dataset.retried = '1';
+            this.src = rawFallback;
+          }
+        };
+      }
+      if (img.src !== vidSrc) img.src = vidSrc;
+      var oldVids = tile.querySelectorAll('video.tile-video, iframe.tile-iframe');
+      oldVids.forEach(function(el){ el.remove(); });
+      return;
+    }
+
+    // 4. Direct MP4 / WebM / MOV / blob / data video
     var v = tile.querySelector('video.tile-video');
     if (!v) {
       v = document.createElement('video');
@@ -378,14 +418,22 @@
       v.setAttribute('autoplay', '');
       tile.appendChild(v);
     }
+    if (rawFallback) {
+      v.onerror = function() {
+        if (!this.dataset.retried) {
+          this.dataset.retried = '1';
+          this.src = rawFallback;
+        }
+      };
+    }
     if (v.src !== vidSrc) v.src = vidSrc;
     v.play().catch(function(){});
     v.addEventListener('ended', function() {
       v.currentTime = 0;
       v.play().catch(function(){});
     });
-    var oldIf = tile.querySelector('iframe.tile-iframe');
-    if (oldIf) oldIf.remove();
+    var oldIf = tile.querySelectorAll('iframe.tile-iframe, img.tile-photo');
+    oldIf.forEach(function(el){ el.remove(); });
   }
 
   // Ensure all tiles with data-video autoplay
