@@ -75,7 +75,8 @@
       "poster": "",
       "dur": "0:28",
       "badge": "Reel",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 3,
@@ -88,7 +89,8 @@
       "poster": "",
       "dur": "0:30",
       "badge": "Ad",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 5,
@@ -101,7 +103,8 @@
       "poster": "",
       "dur": "0:12",
       "badge": "Motion",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 6,
@@ -114,7 +117,8 @@
       "poster": "",
       "dur": "8:15",
       "badge": "YouTube",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 7,
@@ -127,7 +131,8 @@
       "poster": "",
       "dur": "0:21",
       "badge": "Reel",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 8,
@@ -140,7 +145,8 @@
       "poster": "",
       "dur": "",
       "badge": "Sound",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 9,
@@ -153,7 +159,8 @@
       "poster": "",
       "dur": "0:15",
       "badge": "Grade",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 10,
@@ -166,7 +173,8 @@
       "poster": "",
       "dur": "0:06",
       "badge": "Motion",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 1789995764691,
@@ -179,7 +187,8 @@
       "poster": "",
       "dur": "0:30",
       "badge": "Video",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 1790002623801,
@@ -192,7 +201,8 @@
       "poster": "",
       "dur": "0:30",
       "badge": "Video",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     },
     {
       "id": 1790005349627,
@@ -205,7 +215,8 @@
       "poster": "",
       "dur": "0:30",
       "badge": "Video",
-      "hideText": true
+      "hideText": true,
+      "hideBadge": false
     }
   ]
 }

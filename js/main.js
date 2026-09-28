@@ -229,12 +229,25 @@
             tile.setAttribute('data-sub', pj.sub || '');
             var tp = $('.cap p', tile);
             if (tp) tp.textContent = pj.sub || '';
+            var shouldHideBadge = !!pj.hideBadge || pj.cat === 'none';
+            if (shouldHideBadge) {
+              tile.classList.add('hide-badge');
+            } else {
+              tile.classList.remove('hide-badge');
+            }
+
             if (pj.video !== undefined) tile.setAttribute('data-video', pj.video);
             if (pj.preview !== undefined) tile.setAttribute('data-preview', pj.preview);
             if (pj.cat) {
               tile.setAttribute('data-cat', pj.cat);
               var badge = $('.badge', tile);
-              if (badge) badge.textContent = pj.cat.charAt(0).toUpperCase() + pj.cat.slice(1);
+              if (badge) {
+                if (pj.cat === 'none') {
+                  badge.textContent = '';
+                } else {
+                  badge.textContent = pj.cat.charAt(0).toUpperCase() + pj.cat.slice(1);
+                }
+              }
             }
             // Autoplay video or photo in work tile
             var vidSrc = (pj.video !== undefined && pj.video !== '') ? pj.video : (pj.preview || tile.getAttribute('data-video') || '');
