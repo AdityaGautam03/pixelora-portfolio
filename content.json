@@ -231,6 +231,20 @@
       "poster": "",
       "dur": "0:30",
       "badge": "Video"
+    },
+    {
+      "id": 1790599302251,
+      "cat": "youtube",
+      "ratio": "16:9",
+      "title": "New Video Project",
+      "sub": "Client edit / description",
+      "hideText": true,
+      "hideBadge": true,
+      "video": "https://youtu.be/4I14rR9yBpg",
+      "preview": "",
+      "poster": "",
+      "dur": "0:30",
+      "badge": "Video"
     }
   ]
 }
