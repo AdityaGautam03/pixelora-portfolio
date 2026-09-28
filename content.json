@@ -66,7 +66,7 @@
   "projects": [
     {
       "id": 2,
-      "cat": "ads",
+      "cat": "grading",
       "ratio": "16:9",
       "title": "",
       "sub": "",
@@ -144,7 +144,7 @@
     },
     {
       "id": 9,
-      "cat": "grading",
+      "cat": "motion",
       "ratio": "9:16",
       "title": "",
       "sub": "",
@@ -157,7 +157,7 @@
     },
     {
       "id": 10,
-      "cat": "motion",
+      "cat": "youtube",
       "ratio": "16:9",
       "title": "",
       "sub": "",
@@ -170,7 +170,7 @@
     },
     {
       "id": 1789995764691,
-      "cat": "youtube",
+      "cat": "motion",
       "ratio": "9:16",
       "title": "",
       "sub": "",
@@ -183,7 +183,7 @@
     },
     {
       "id": 1790002623801,
-      "cat": "youtube",
+      "cat": "reels",
       "ratio": "9:16",
       "title": "",
       "sub": "",
@@ -196,7 +196,7 @@
     },
     {
       "id": 1790005349627,
-      "cat": "youtube",
+      "cat": "reels",
       "ratio": "9:16",
       "title": "",
       "sub": "",
