@@ -12,8 +12,8 @@
     }
   },
   "beforeAfter": {
-    "beforeMedia": "assets/uploads/_____________________mubktcel.jpg",
-    "afterMedia": "assets/uploads/ba_after_mubd2vsl.jpeg",
+    "beforeMedia": "assets/uploads/poster_1_need_a_vide_mul4c6g8.png",
+    "afterMedia": "assets/uploads/poster-A-need-a-vide_mul4ceqm.png",
     "beforeLabel": "Before",
     "afterLabel": "After"
   },
@@ -94,7 +94,7 @@
       "ratio": "16:9",
       "title": "Thumbnail design",
       "sub": "Built to earn the click",
-      "video": "assets/uploads/LUFFY______mubdb6ig.jpe",
+      "video": "assets/uploads/poster-A-need-a-vide_mul4bnyq.png",
       "preview": "",
       "poster": "",
       "dur": "",
@@ -103,10 +103,10 @@
     {
       "id": 5,
       "cat": "motion",
-      "ratio": "1:1",
-      "title": "Animated titles",
-      "sub": "After Effects",
-      "video": "assets/uploads/_____________________mubew8zz.jpg",
+      "ratio": "16:9",
+      "title": "",
+      "sub": "",
+      "video": "https://youtu.be/2O02SqUjAxo",
       "preview": "",
       "poster": "",
       "dur": "0:12",
