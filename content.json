@@ -89,18 +89,6 @@
       "badge": "Ad"
     },
     {
-      "id": 4,
-      "cat": "thumbnails",
-      "ratio": "16:9",
-      "title": "Thumbnail design",
-      "sub": "Built to earn the click",
-      "video": "assets/uploads/poster-A-need-a-vide_mul4bnyq.png",
-      "preview": "",
-      "poster": "",
-      "dur": "",
-      "badge": "Thumbnail"
-    },
-    {
       "id": 5,
       "cat": "motion",
       "ratio": "16:9",
