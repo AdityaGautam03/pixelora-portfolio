@@ -76,7 +76,7 @@
       "dur": "0:28",
       "badge": "Reel",
       "hideText": true,
-      "hideBadge": false
+      "hideBadge": true
     },
     {
       "id": 3,
