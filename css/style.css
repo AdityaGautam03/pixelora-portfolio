@@ -159,6 +159,8 @@ body.dark{background:var(--ink);color:var(--white)}
 .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,17,69,0) 58%,rgba(26,17,69,.9) 100%);z-index:2}
 .badge{position:absolute;top:16px;left:16px;z-index:4;background:var(--white);color:var(--ink);border-radius:999px;padding:5px 13px;font-family:var(--display);font-weight:500;font-size:13px}
 .dur, .price{display:none !important}
+.tile.hide-text .cap,
+.tile.hide-text .shade{display:none !important}
 .cap{position:absolute;left:20px;right:20px;bottom:18px;z-index:4;color:var(--white)}
 .cap h3{font-size:21px;letter-spacing:-.02em;line-height:1.15}
 .cap p{font-size:14px;opacity:.85;margin-top:3px;font-family:var(--display);font-weight:300}

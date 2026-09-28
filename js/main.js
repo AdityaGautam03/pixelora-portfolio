@@ -213,18 +213,22 @@
               if (pj.ratio === '16:9') tile.classList.add('w2');
               else if (pj.ratio === '9:16') tile.classList.add('h2r');
             }
-            if (pj.title) {
-              tile.setAttribute('data-title', pj.title);
-              var th3 = $('.cap h3', tile);
-              if (th3) th3.textContent = pj.title;
-              var btnOpen = $('.tile-open', tile);
-              if (btnOpen) btnOpen.setAttribute('aria-label', 'Open project: ' + pj.title);
+            var shouldHide = !!pj.hideText || (!pj.title && !pj.sub);
+            if (shouldHide) {
+              tile.classList.add('hide-text');
+            } else {
+              tile.classList.remove('hide-text');
             }
-            if (pj.sub) {
-              tile.setAttribute('data-sub', pj.sub);
-              var tp = $('.cap p', tile);
-              if (tp) tp.textContent = pj.sub;
-            }
+
+            tile.setAttribute('data-title', pj.title || '');
+            var th3 = $('.cap h3', tile);
+            if (th3) th3.textContent = pj.title || '';
+            var btnOpen = $('.tile-open', tile);
+            if (btnOpen) btnOpen.setAttribute('aria-label', pj.title ? ('Open project: ' + pj.title) : 'Open project');
+
+            tile.setAttribute('data-sub', pj.sub || '');
+            var tp = $('.cap p', tile);
+            if (tp) tp.textContent = pj.sub || '';
             if (pj.video !== undefined) tile.setAttribute('data-video', pj.video);
             if (pj.preview !== undefined) tile.setAttribute('data-preview', pj.preview);
             if (pj.cat) {
@@ -687,8 +691,10 @@
 
     function open(opts) {
       lastFocus = document.activeElement;
-      title.textContent = opts.title || 'Showreel';
+      title.textContent = opts.title || '';
+      title.style.display = title.textContent ? '' : 'none';
       sub.textContent = opts.sub || '';
+      sub.style.display = sub.textContent ? '' : 'none';
       media.innerHTML = '';
       var url = opts.video || '';
       var emb = url ? embedUrl(url) : '';
