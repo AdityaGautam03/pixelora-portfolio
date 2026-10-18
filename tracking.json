@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿[
   {
     "email": "adityagautam030805@gmail.com",
@@ -14,3 +15,16 @@
     "userAgent": "GoogleImageProxy"
   }
 ]
+=======
+[
+  {
+    "timestamp": "2026-10-18T06:14:24.455Z",
+    "type": "OPEN",
+    "email": "adityagautam030805@gmail.com",
+    "creator": "Gautam",
+    "channel": "Gautam Vlogs",
+    "ip": "66.249.84.165",
+    "userAgent": "Mozilla/5.0 (Windows NT 5.1; rv:11.0) Gecko Firefox/11.0 (via ggpht.com GoogleImageProxy)"
+  }
+]
+>>>>>>> 3a2e8aae093056841764526c7b8f7c76deb5dea8
