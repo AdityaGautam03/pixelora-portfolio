@@ -15,7 +15,7 @@ let memoryLogs = null;
 async function getTrackingLogs() {
   if (memoryLogs) return memoryLogs;
   try {
-    const rawRes = await fetch(https://raw.githubusercontent.com//main/tracking.json?t=);
+    const rawRes = await fetch(`https://raw.githubusercontent.com/${REPO}/main/tracking.json?t=${Date.now()}`);
     if (rawRes.ok) {
       memoryLogs = await rawRes.json();
       return memoryLogs;
@@ -33,9 +33,9 @@ async function appendTrackingLog(logItem) {
 
   try {
     let sha = undefined;
-    const getRes = await fetch(https://api.github.com/repos//contents/tracking.json, {
+    const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/tracking.json`, {
       headers: {
-        'Authorization': Bearer ,
+        'Authorization': `Bearer ${TOKEN}`,
         'Accept': 'application/vnd.github.v3+json',
         'User-Agent': 'Pixelora-Tracker'
       }
@@ -59,16 +59,16 @@ async function appendTrackingLog(logItem) {
     const jsonString = JSON.stringify(currentLogs, null, 2);
     const base64Content = Buffer.from(jsonString, 'utf8').toString('base64');
 
-    await fetch(https://api.github.com/repos//contents/tracking.json, {
+    await fetch(`https://api.github.com/repos/${REPO}/contents/tracking.json`, {
       method: 'PUT',
       headers: {
-        'Authorization': Bearer ,
+        'Authorization': `Bearer ${TOKEN}`,
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json',
         'User-Agent': 'Pixelora-Tracker'
       },
       body: JSON.stringify({
-        message: 	rack:  by ,
+        message: `track: ${logItem.type} by ${logItem.creator || logItem.email || 'visitor'}`,
         content: base64Content,
         sha: sha || undefined,
         branch: 'main'
@@ -87,10 +87,10 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', '*');
 
     if (req.method === 'OPTIONS') {
-      return res.status(200).end();
+      res.statusCode = 200;
+      return res.end();
     }
 
-    // Safe query param extraction across all server environments
     const fullUrl = new URL(req.url, 'https://pixelora-edits.vercel.app');
     const email = fullUrl.searchParams.get('email') || (req.query && req.query.email);
     const creator = fullUrl.searchParams.get('creator') || (req.query && req.query.creator);
@@ -101,11 +101,13 @@ module.exports = async (req, res) => {
     // If requested format=json, return tracking events
     if (format === 'json') {
       const logs = await getTrackingLogs();
-      return res.status(200).json({
+      res.setHeader('Content-Type', 'application/json');
+      res.statusCode = 200;
+      return res.end(JSON.stringify({
         success: true,
         total: logs.length,
         logs: logs
-      });
+      }));
     }
 
     // Record tracking event
@@ -123,17 +125,18 @@ module.exports = async (req, res) => {
       appendTrackingLog(logItem).catch(e => console.error(e));
     }
 
-    // Send 1x1 Transparent GIF
+    // Return 1x1 Transparent GIF
     res.setHeader('Content-Type', 'image/gif');
     res.setHeader('Content-Length', TRANSPARENT_GIF.length);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    return res.status(200).send(TRANSPARENT_GIF);
+    res.statusCode = 200;
+    return res.end(TRANSPARENT_GIF);
   } catch (globalErr) {
     console.error('Fatal Tracker Error:', globalErr);
-    // Even in error, return GIF so email client never shows broken image
     res.setHeader('Content-Type', 'image/gif');
-    return res.status(200).send(TRANSPARENT_GIF);
+    res.statusCode = 200;
+    return res.end(TRANSPARENT_GIF);
   }
 };
