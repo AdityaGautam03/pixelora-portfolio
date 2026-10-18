@@ -177,19 +177,7 @@
 </dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="js/main.js" defer></script>
-<script>
-  (function() {
-    try {
-      const p = new URLSearchParams(window.location.search);
-      const creator = p.get('creator') || p.get('ref');
-      const email = p.get('email');
-      const channel = p.get('channel');
-      if (creator || email) {
-        fetch('/api/track?type=click&creator=' + encodeURIComponent(creator||'') + '&email=' + encodeURIComponent(email||'') + '&channel=' + encodeURIComponent(channel||''), { mode: 'no-cors' }).catch(function(){});
-      }
-    } catch(e) {}
-  })();
-</script>
 </body>
 </html>
+
 
