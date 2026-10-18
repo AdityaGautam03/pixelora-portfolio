@@ -243,10 +243,6 @@ tr:hover td {
   padding: 60px 20px;
   color: var(--text-muted);
 }
-.empty-state svg {
-  margin-bottom: 12px;
-  opacity: 0.4;
-}
 </style>
 </head>
 <body>
@@ -347,14 +343,14 @@ function renderTable() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = 
+    tbody.innerHTML = `
       <tr>
         <td colspan="5" class="empty-state">
           No activity recorded yet.<br>
-          <span style="font-size: 12px;">As soon as a creator opens your email or clicks your link, it will appear here in real time!</span>
+          <span style="font-size: 12px; margin-top: 6px; display: inline-block;">As soon as a creator opens your email or clicks your website link, it will appear here in real time!</span>
         </td>
       </tr>
-    ;
+    `;
     return;
   }
 
@@ -366,19 +362,18 @@ function renderTable() {
       ? '<span class="tag tag-click">🌐 WEBSITE VISITED</span>'
       : '<span class="tag tag-open">📧 EMAIL OPENED</span>';
 
-    return 
+    return `
       <tr>
-        <td class="time-col"></td>
-        <td></td>
-        <td><strong></strong></td>
-        <td></td>
-        <td style="color: var(--text-muted); font-family: var(--mono); font-size: 12px;"></td>
+        <td class="time-col">${timeStr}</td>
+        <td>${tagHtml}</td>
+        <td><strong>${item.creator || 'Visitor'}</strong></td>
+        <td>${item.channel || '—'}</td>
+        <td style="color: var(--text-muted); font-family: var(--mono); font-size: 12px;">${item.email || '—'}</td>
       </tr>
-    ;
+    `;
   }).join('');
 }
 
-// Initial fetch and auto-refresh every 20 seconds
 fetchLogs();
 setInterval(fetchLogs, 20000);
 </script>
