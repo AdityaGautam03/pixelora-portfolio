@@ -10,31 +10,24 @@ const TRANSPARENT_GIF = Buffer.from(
   'base64'
 );
 
-let memoryLogs = [];
+let memoryLogs = null;
 
 async function getTrackingLogs() {
-  if (memoryLogs.length > 0) return memoryLogs;
+  if (memoryLogs) return memoryLogs;
   try {
-    const res = await fetch(https://api.github.com/repos//contents/tracking.json, {
-      headers: {
-        'Authorization': Bearer ,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Pixelora-Tracker'
-      }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const content = Buffer.from(data.content, 'base64').toString('utf8');
-      memoryLogs = JSON.parse(content);
+    const rawRes = await fetch(https://raw.githubusercontent.com//main/tracking.json?t=);
+    if (rawRes.ok) {
+      memoryLogs = await rawRes.json();
       return memoryLogs;
     }
   } catch (err) {
-    console.error('Error reading tracking.json:', err);
+    console.error('Error fetching raw tracking.json:', err);
   }
   return [];
 }
 
 async function appendTrackingLog(logItem) {
+  if (!memoryLogs) memoryLogs = [];
   memoryLogs.unshift(logItem);
   if (memoryLogs.length > 500) memoryLogs = memoryLogs.slice(0, 500);
 
@@ -47,6 +40,7 @@ async function appendTrackingLog(logItem) {
         'User-Agent': 'Pixelora-Tracker'
       }
     });
+
     let currentLogs = [];
     if (getRes.ok) {
       const fileInfo = await getRes.json();
@@ -60,6 +54,7 @@ async function appendTrackingLog(logItem) {
 
     currentLogs.unshift(logItem);
     if (currentLogs.length > 500) currentLogs = currentLogs.slice(0, 500);
+    memoryLogs = currentLogs;
 
     const jsonString = JSON.stringify(currentLogs, null, 2);
     const base64Content = Buffer.from(jsonString, 'utf8').toString('base64');
@@ -85,44 +80,60 @@ async function appendTrackingLog(logItem) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
-  res.setHeader('Access-Control-Allow-Headers', '*');
+  try {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+    res.setHeader('Access-Control-Allow-Headers', '*');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    // Safe query param extraction across all server environments
+    const fullUrl = new URL(req.url, 'https://pixelora-edits.vercel.app');
+    const email = fullUrl.searchParams.get('email') || (req.query && req.query.email);
+    const creator = fullUrl.searchParams.get('creator') || (req.query && req.query.creator);
+    const channel = fullUrl.searchParams.get('channel') || (req.query && req.query.channel);
+    const type = fullUrl.searchParams.get('type') || (req.query && req.query.type) || 'open';
+    const format = fullUrl.searchParams.get('format') || (req.query && req.query.format);
+
+    // If requested format=json, return tracking events
+    if (format === 'json') {
+      const logs = await getTrackingLogs();
+      return res.status(200).json({
+        success: true,
+        total: logs.length,
+        logs: logs
+      });
+    }
+
+    // Record tracking event
+    if (email || creator) {
+      const logItem = {
+        timestamp: new Date().toISOString(),
+        type: type.toUpperCase(),
+        email: email || '',
+        creator: creator || '',
+        channel: channel || '',
+        ip: req.headers['x-forwarded-for'] || (req.socket ? req.socket.remoteAddress : '') || '',
+        userAgent: req.headers['user-agent'] || ''
+      };
+
+      appendTrackingLog(logItem).catch(e => console.error(e));
+    }
+
+    // Send 1x1 Transparent GIF
+    res.setHeader('Content-Type', 'image/gif');
+    res.setHeader('Content-Length', TRANSPARENT_GIF.length);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    return res.status(200).send(TRANSPARENT_GIF);
+  } catch (globalErr) {
+    console.error('Fatal Tracker Error:', globalErr);
+    // Even in error, return GIF so email client never shows broken image
+    res.setHeader('Content-Type', 'image/gif');
+    return res.status(200).send(TRANSPARENT_GIF);
   }
-
-  const { email, creator, channel, type, format } = req.query;
-
-  if (format === 'json' || req.headers.accept?.includes('application/json')) {
-    const logs = await getTrackingLogs();
-    return res.status(200).json({
-      success: true,
-      total: logs.length,
-      logs
-    });
-  }
-
-  if (email || creator) {
-    const logItem = {
-      timestamp: new Date().toISOString(),
-      type: (type || 'open').toUpperCase(),
-      email: email || 'unknown',
-      creator: creator || '',
-      channel: channel || '',
-      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || '',
-      userAgent: req.headers['user-agent'] || ''
-    };
-
-    appendTrackingLog(logItem).catch(err => console.error('Log save error:', err));
-  }
-
-  res.setHeader('Content-Type', 'image/gif');
-  res.setHeader('Content-Length', TRANSPARENT_GIF.length);
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  return res.status(200).send(TRANSPARENT_GIF);
 };
